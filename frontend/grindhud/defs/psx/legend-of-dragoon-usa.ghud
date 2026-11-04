@@ -1,0 +1,190 @@
+grindhud 1
+# The Legend of Dragoon (USA), all four discs.
+# RAM addresses: Dragoon Modifier wiki/source (NTA column), TASVideos LoD script
+# (encounter "danger" counter). Level, D'Lv and addition tables: Severed Chains
+# (Legend-of-Dragoon-Modding) character templates. Verified against a real
+# PCSX ReARMed save state on 2026-11-04.
+game The Legend of Dragoon
+serial SCUS-94491 SCUS-94584 SCUS-94585 SCUS-94586
+
+# character ids: 0 Dart 1 Lavitz 2 Shana 3 Rose 4 Haschel 5 Albert 6 Meru 7 Kongol 8 Miranda
+table name DART LAVITZ SHANA ROSE HASCHEL ALBERT MERU KONGOL MIRANDA
+# row of each character in the field stat table (Albert=Lavitz, Miranda=Shana)
+table statpos 1 4 6 5 2 4 3 0 6
+# first retail addition id per character (-1 = no additions)
+table addoff 0 8 -1 14 29 8 23 19 -1
+# total EXP needed for the next level: 60 entries per character, index id*60 + level-1
+table xpnext 20 43 102 200 345 548 819 1166 1600 2129 2764 3515 4390 5400 6553 7860 9331 10974 12800 14817   # Dart L1-20
+table xpnext 17036 19467 22118 25000 28121 31492 35123 39022 43200 47665 52428 57499 62886 68600 74649 81044 87795 94910 102400 110273   # Dart L21-40
+table xpnext 118540 127211 136294 145800 155737 166116 176947 188238 200000 215302 231216 247754 264928 282750 301232 320386 340224 360758 382000 382000   # Dart L41-60
+table xpnext 35 60 110 203 350 557 831 1183 1624 2161 2806 3567 4456 5481 6651 7978 9471 11139 12992 15039   # Lavitz L1-20
+table xpnext 17292 19759 22450 25375 28543 31965 35650 39607 43848 48380 53215 58361 63829 69629 75769 82260 89112 96334 103936 111927   # Lavitz L21-40
+table xpnext 120318 129119 138338 147987 158073 168608 179601 191061 203000 218531 234684 251470 268901 286991 305750 325191 345327 366169 387730 387730   # Lavitz L41-60
+table xpnext 30 50 100 204 352 559 835 1189 1632 2172 2820 3585 4478 5508 6684 8018 9517 11193 13056 15113   # Shana L1-20
+table xpnext 17377 19856 22560 25500 28684 32122 35825 39802 44064 48618 53477 58649 64144 69972 76142 82665 89551 96808 104448 112479   # Shana L21-40
+table xpnext 120911 129755 139020 148716 158852 169439 180486 192003 204000 219608 235840 252709 270226 288405 307256 326793 347028 367973 389640 389640   # Shana L41-60
+table xpnext 20 44 104 204 353 561 838 1193 1636 2178 2828 3596 4491 5524 6704 8041 9545 11226 13094 15158   # Rose L1-20
+table xpnext 17428 19914 22627 25575 28768 32217 35931 39919 44193 48761 53634 58821 64332 70177 76366 82908 89814 97093 104755 112809   # Rose L21-40
+table xpnext 121267 130137 139429 149153 159319 169937 181016 192567 204600 220253 236533 253452 271021 289253 308160 327754 348049 369055 390786 390786   # Rose L41-60
+table xpnext 20 43 103 202 349 554 827 1178 1616 2150 2792 3550 4434 5454 6619 7939 9424 11084 12928 14965   # Haschel L1-20
+table xpnext 17207 19661 22339 25250 28402 31807 35474 39412 43632 48142 52953 58074 63515 69286 75396 81855 88673 95859 103424 111376   # Haschel L21-40
+table xpnext 119726 128483 137657 147258 157294 167777 178716 190120 202000 217455 233528 250231 267577 285577 304244 323589 343626 364365 385820 385820   # Haschel L41-60
+table xpnext 35 60 110 203 350 557 831 1183 1624 2161 2806 3567 4456 5481 6651 7978 9471 11139 12992 15039   # Albert L1-20
+table xpnext 17292 19759 22450 25375 28543 31965 35650 39607 43848 48380 53215 58361 63829 69629 75769 82260 89112 96334 103936 111927   # Albert L21-40
+table xpnext 120318 129119 138338 147987 158073 168608 179601 191061 203000 218531 234684 251470 268901 286991 305750 325191 345327 366169 387730 387730   # Albert L41-60
+table xpnext 20 43 103 202 349 555 829 1180 1619 2155 2797 3557 4443 5464 6632 7955 9443 11106 12953 14995   # Meru L1-20
+table xpnext 17241 19700 22383 25300 28459 31870 35544 39490 43718 48237 53057 58189 63641 69423 75545 82017 88848 96049 103628 111596   # Meru L21-40
+table xpnext 119963 128737 137929 147549 157606 168110 179070 190497 202400 217885 233990 250727 268107 286143 304846 324230 344306 365087 386584 386584   # Meru L41-60
+table xpnext 20 43 104 203 351 558 833 1186 1627 2165 2811 3574 4465 5491 6665 7994 9489 11160 13017 15069   # Kongol L1-20
+table xpnext 17326 19798 22494 25425 28599 32028 35720 39685 43934 48475 53320 58476 63955 69766 75918 82422 89287 96523 104140 112148   # Kongol L21-40
+table xpnext 120555 129373 138611 148278 158385 168940 179955 191438 203400 218962 235146 251965 269431 287556 306352 325832 346007 366890 388494 388494   # Kongol L41-60
+table xpnext 30 50 100 204 352 559 835 1189 1632 2172 2820 3585 4478 5508 6684 8018 9517 11193 13056 15113   # Miranda L1-20
+table xpnext 17377 19856 22560 25500 28684 32122 35825 39802 44064 48618 53477 58649 64144 69972 76142 82665 89551 96808 104448 112479   # Miranda L21-40
+table xpnext 120911 129755 139020 148716 158852 169439 180486 192003 204000 219608 235840 252709 270226 288405 307256 326793 347028 367973 389640 389640   # Miranda L41-60
+# total SP (dragoon EXP) needed for the next D'Lv: 5 per character, index id*5 + dlv-1; 0 = max
+table dxpnext 1200 6000 12000 20000 0   # Dart
+table dxpnext 1000 6000 12000 20000 0   # Lavitz
+table dxpnext 1000 6000 12000 20000 0   # Shana
+table dxpnext 1200 6000 12000 20000 0   # Rose
+table dxpnext 1000 6000 12000 20000 0   # Haschel
+table dxpnext 1000 6000 12000 20000 0   # Albert
+table dxpnext 1000 2000 12000 20000 0   # Meru
+table dxpnext 1000 2000 12000 20000 0   # Kongol
+table dxpnext 1000 6000 12000 20000 0   # Miranda
+# addition short names: 8 per character, index id*8 + slot
+table addname "Dbl Slash" "Volcano" "Burn Rush" "Crush Dnc" "Madness" "Moon Strk" "Blz Dynmo" "-"   # Dart
+table addname "Harpoon" "Spin Cane" "Rod Typhn" "Gust Wind" "Flwr Strm" "-" "-" "-"   # Lavitz
+table addname "-" "-" "-" "-" "-" "-" "-" "-"   # Shana
+table addname "Whip Smak" "More&More" "Hrd Blade" "Demon Dnc" "-" "-" "-" "-"   # Rose
+table addname "Dbl Punch" "Ferry Stx" "Summon 4G" "5-Ring" "Hex Hammr" "OmniSweep" "-" "-"   # Haschel
+table addname "Harpoon" "Spin Cane" "Rod Typhn" "Gust Wind" "Flwr Strm" "-" "-" "-"   # Albert
+table addname "Dbl Smack" "Hamr Spin" "Cool Boog" "Cat Cradl" "PerkyStep" "-" "-" "-"   # Meru
+table addname "Pursuit" "Inferno" "BoneCrush" "-" "-" "-" "-" "-"   # Kongol
+table addname "-" "-" "-" "-" "-" "-" "-" "-"   # Miranda
+
+# --- raw values ---------------------------------------------------------
+let gold = u32(0xBAC5C)
+let played = u32(0xBAC68) / 60    # seconds
+let danger = u16(0xC6AE8)         # encounter counter; 41215 while in battle
+let inbattle = danger == 41215
+let disc = u8(0xBC058)
+let st = 0x110DF4                 # field stat table: 0x1E8 per char, 8 per level
+let p1 = u8(0xBAC50)              # party slot character ids, 255 = empty
+let p2 = u8(0xBAC54)
+let p3 = u8(0xBAC58)
+
+# Only count while a save is actually loaded (title screen RAM is junk).
+valid p1 < 9 && played > 0 && disc >= 1 && disc <= 4
+
+# party slot 1
+let c1 = 0xBAEF4 + 0x2C * p1     # character table row
+let lv1 = u8(c1 + 0x12)
+let mhp1 = hold(u16(st + 0x1E8 * arr(statpos, p1) + 8 * lv1), !inbattle)   # stat table is reused in battle
+let xp1 = u32(c1)
+let xpn1 = arr(xpnext, p1 * 60 + lv1 - 1)
+let dlv1 = u8(c1 + 0x13)
+let dsp1 = u16(c1 + 0x0E)          # total SP earned (dragoon EXP)
+let dn1 = arr(dxpnext, p1 * 5 + dlv1 - 1)
+let aslot1 = u8(c1 + 0x19) - arr(addoff, p1)
+let hasadd1 = arr(addoff, p1) >= 0 && aslot1 >= 0 && aslot1 < 8
+let alv1 = u8(c1 + 0x1A + aslot1)
+let ause1 = u8(c1 + 0x22 + aslot1)
+
+# party slot 2
+let c2 = 0xBAEF4 + 0x2C * p2     # character table row
+let lv2 = u8(c2 + 0x12)
+let mhp2 = hold(u16(st + 0x1E8 * arr(statpos, p2) + 8 * lv2), !inbattle)   # stat table is reused in battle
+let xp2 = u32(c2)
+let xpn2 = arr(xpnext, p2 * 60 + lv2 - 1)
+let dlv2 = u8(c2 + 0x13)
+let dsp2 = u16(c2 + 0x0E)          # total SP earned (dragoon EXP)
+let dn2 = arr(dxpnext, p2 * 5 + dlv2 - 1)
+let aslot2 = u8(c2 + 0x19) - arr(addoff, p2)
+let hasadd2 = arr(addoff, p2) >= 0 && aslot2 >= 0 && aslot2 < 8
+let alv2 = u8(c2 + 0x1A + aslot2)
+let ause2 = u8(c2 + 0x22 + aslot2)
+
+# party slot 3
+let c3 = 0xBAEF4 + 0x2C * p3     # character table row
+let lv3 = u8(c3 + 0x12)
+let mhp3 = hold(u16(st + 0x1E8 * arr(statpos, p3) + 8 * lv3), !inbattle)   # stat table is reused in battle
+let xp3 = u32(c3)
+let xpn3 = arr(xpnext, p3 * 60 + lv3 - 1)
+let dlv3 = u8(c3 + 0x13)
+let dsp3 = u16(c3 + 0x0E)          # total SP earned (dragoon EXP)
+let dn3 = arr(dxpnext, p3 * 5 + dlv3 - 1)
+let aslot3 = u8(c3 + 0x19) - arr(addoff, p3)
+let hasadd3 = arr(addoff, p3) >= 0 && aslot3 >= 0 && aslot3 < 8
+let alv3 = u8(c3 + 0x1A + aslot3)
+let ause3 = u8(c3 + 0x22 + aslot3)
+
+# EXP across all nine characters, so party swaps don't look like gains.
+let allxp = u32(0xBAEF4) + u32(0xBAF20) + u32(0xBAF4C) + u32(0xBAF78) + u32(0xBAFA4) + u32(0xBAFD0) + u32(0xBAFFC) + u32(0xBB028) + u32(0xBB054)
+let allsp = u16(0xBAF02) + u16(0xBAF2E) + u16(0xBAF5A) + u16(0xBAF86) + u16(0xBAFB2) + u16(0xBAFDE) + u16(0xBB00A) + u16(0xBB036) + u16(0xBB062)
+
+# --- session stats (game time while valid) ------------------------------
+let xpgain = gain(allxp, 100000)
+let spgain = gain(allsp, 20000)
+let goldgain = gain(gold, 100000)
+let battles = count(inbattle)
+
+# --- left: party --------------------------------------------------------
+# Panels are ~12 characters wide on a 320-wide battle screen: keep lines short.
+left when p1 < 9 color gold "{tbl(name, p1)} L{lv1}"
+left when p1 < 9 && !inbattle "HP {u16(c1 + 8)}/{mhp1}"
+left when p1 < 9 color gray "Next {xpn1 - xp1:k}"
+left when p1 < 9 && dn1 > 0 color magenta "D'L{dlv1} {bar(dsp1, dn1)}"
+left when p1 < 9 && dn1 > 0 color dim "{dsp1:k}/{dn1:k}"
+left when p1 < 9 && dn1 == 0 color magenta "D'L{dlv1} MAX"
+left when p1 < 9 && hasadd1 color cyan "{tbl(addname, p1 * 8 + aslot1)} L{alv1}"
+left when p1 < 9 && hasadd1 && alv1 < 5 color cyan "{bar(ause1 - (alv1 - 1) * 20, 20)}"
+left when p1 < 9 && hasadd1 && alv1 < 5 color dim "{ause1}/{alv1 * 20} uses"
+left when p1 < 9 && hasadd1 && alv1 >= 5 color dim "Mastered"
+left when p2 < 9 ""
+left when p2 < 9 color gold "{tbl(name, p2)} L{lv2}"
+left when p2 < 9 && !inbattle "HP {u16(c2 + 8)}/{mhp2}"
+left when p2 < 9 color gray "Next {xpn2 - xp2:k}"
+left when p2 < 9 && dn2 > 0 color magenta "D'L{dlv2} {bar(dsp2, dn2)}"
+left when p2 < 9 && dn2 > 0 color dim "{dsp2:k}/{dn2:k}"
+left when p2 < 9 && dn2 == 0 color magenta "D'L{dlv2} MAX"
+left when p2 < 9 && hasadd2 color cyan "{tbl(addname, p2 * 8 + aslot2)} L{alv2}"
+left when p2 < 9 && hasadd2 && alv2 < 5 color cyan "{bar(ause2 - (alv2 - 1) * 20, 20)}"
+left when p2 < 9 && hasadd2 && alv2 < 5 color dim "{ause2}/{alv2 * 20} uses"
+left when p2 < 9 && hasadd2 && alv2 >= 5 color dim "Mastered"
+left when p3 < 9 ""
+left when p3 < 9 color gold "{tbl(name, p3)} L{lv3}"
+left when p3 < 9 && !inbattle "HP {u16(c3 + 8)}/{mhp3}"
+left when p3 < 9 color gray "Next {xpn3 - xp3:k}"
+left when p3 < 9 && dn3 > 0 color magenta "D'L{dlv3} {bar(dsp3, dn3)}"
+left when p3 < 9 && dn3 > 0 color dim "{dsp3:k}/{dn3:k}"
+left when p3 < 9 && dn3 == 0 color magenta "D'L{dlv3} MAX"
+left when p3 < 9 && hasadd3 color cyan "{tbl(addname, p3 * 8 + aslot3)} L{alv3}"
+left when p3 < 9 && hasadd3 && alv3 < 5 color cyan "{bar(ause3 - (alv3 - 1) * 20, 20)}"
+left when p3 < 9 && hasadd3 && alv3 < 5 color dim "{ause3}/{alv3 * 20} uses"
+left when p3 < 9 && hasadd3 && alv3 >= 5 color dim "Mastered"
+
+# --- right: the grind ---------------------------------------------------
+right color cyan "SESSION"
+right "{session():t}"
+right "Fights {battles}"
+right ""
+right color cyan "EXP"
+right "+{xpgain:k}"
+right "{perhour(xpgain):k}/h"
+right ""
+right color magenta "SP"
+right "+{spgain:k}"
+right "{perhour(spgain):k}/h"
+right ""
+right color gold "GOLD"
+right "{gold}"
+right "+{goldgain:k}"
+right "{perhour(goldgain):k}/h"
+right ""
+right meta when !inbattle color orange "DANGER"
+right meta when !inbattle color orange "{bar(danger, 5130)}"
+right meta when !inbattle color dim "{danger}/5130"
+right meta when inbattle color red "IN BATTLE"
+right ""
+right color dim "Played"
+right color dim "{played:t}"

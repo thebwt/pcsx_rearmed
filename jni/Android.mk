@@ -76,7 +76,9 @@ SOURCES_C += $(CDR_DIR)/cdrcimg.c
 SOURCES_C += $(FRONTEND_DIR)/main.c \
              $(FRONTEND_DIR)/plugin.c \
              $(FRONTEND_DIR)/cspace.c \
-             $(FRONTEND_DIR)/libretro.c
+             $(FRONTEND_DIR)/libretro.c \
+             $(FRONTEND_DIR)/libretro_grindhud.c \
+             $(FRONTEND_DIR)/grindhud/grindhud.c
 
 # libchdr
 LCHDR = $(DEPS_DIR)/libchdr

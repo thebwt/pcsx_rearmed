@@ -51,6 +51,7 @@
 
 #include <libretro.h>
 #include "libretro_core_options.h"
+#include "libretro_grindhud.h"
 
 #ifdef USE_LIBRETRO_VFS
 #include <streams/file_stream_transforms.h>
@@ -315,7 +316,7 @@ static void set_vout_fb(void)
    fb.access_flags   = RETRO_MEMORY_ACCESS_WRITE;
 
    ret = environ_cb(RETRO_ENVIRONMENT_GET_CURRENT_SOFTWARE_FRAMEBUFFER, &fb);
-   if (ret && vout_can_dupe &&
+   if (ret && vout_can_dupe && !lrgh_active() &&
        (fb.format == RETRO_PIXEL_FORMAT_RGB565 || fb.format == RETRO_PIXEL_FORMAT_XRGB8888))
    {
       int bytes_pp = (fb.format == RETRO_PIXEL_FORMAT_XRGB8888) ? 4 : 2;
@@ -1070,6 +1071,7 @@ void retro_set_environment(retro_environment_t cb)
 
    if (cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logging))
       log_cb = logging.log;
+   lrgh_set_log(log_cb);
 
    environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 
@@ -1241,6 +1243,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->geometry.max_width      = VOUT_MAX_WIDTH;
    info->geometry.max_height     = VOUT_MAX_HEIGHT;
    info->geometry.aspect_ratio   = 4.0 / 3.0;
+   lrgh_geometry(geom_width, geom_height, &info->geometry);
 }
 
 /* savestates */
@@ -1358,6 +1361,7 @@ bool retro_unserialize(const void *data, size_t size)
       return false;
    if (CdromFrontendId != -1 && CdromFrontendId != disk_current_index)
       disk_set_image_index(CdromFrontendId);
+   lrgh_discontinuity();
    /* a successful restore overrides any reset requested before this call,
     * otherwise the next retro_run() would silently discard it */
    reset_pending = false;
@@ -2254,6 +2258,7 @@ void retro_reset(void)
 {
    //hack to prevent retroarch freezing when reseting in the menu but not while running with the hot key
    reset_pending = true;
+   lrgh_discontinuity();
    //SysReset();
 }
 
@@ -3099,6 +3104,16 @@ static void update_variables(bool in_flight)
 
    update_option_visibility();
 
+   if (lrgh_update_options(environ_cb))
+   {
+      /* Grind HUD toggled or resized: our own buffer, bigger max geometry */
+      if (vout_buf)
+         set_vout_fb();
+      vout_fb_dirty = 1;
+      if (in_flight)
+         old_fps = -1.0f;   /* force SET_SYSTEM_AV_INFO below */
+   }
+
    if (in_flight && old_fps != psxGetFps())
    {
       struct retro_system_av_info info;
@@ -3578,8 +3593,13 @@ void retro_run(void)
       pl_rearmed_cbs.fskip_dirty = 0;
    }
 
-   video_cb((vout_fb_dirty || !vout_can_dupe) ? vout_buf_ptr : NULL,
-       vout_width, vout_height, vout_pitch_b);
+   if (lrgh_active())
+      lrgh_present(video_cb, vout_buf_ptr, vout_width, vout_height, vout_pitch_b,
+            (current_fmt == RETRO_PIXEL_FORMAT_XRGB8888) ? 4 : 2,
+            vout_fb_dirty, vout_can_dupe, psxGetFps());
+   else
+      video_cb((vout_fb_dirty || !vout_can_dupe) ? vout_buf_ptr : NULL,
+          vout_width, vout_height, vout_pitch_b);
    vout_fb_dirty = 0;
 
 #ifdef HAVE_CDROM
@@ -4015,6 +4035,7 @@ void retro_deinit(void)
       plugins_opened = 0;
    }
    SysClose();
+   lrgh_deinit();
 #ifdef _3DS
    linearFree(vram_mem);
    vram_mem = NULL;
