@@ -11,6 +11,7 @@
 
 #include "libretro_grindhud.h"
 #include "grindhud/grindhud.h"
+#include "grindhud/builtin_defs.h"
 #include "../libpcsxcore/misc.h"
 #include "../libpcsxcore/r3000a.h"
 
@@ -138,6 +139,36 @@ static int find_definition(const char *serial, char *out, size_t outlen)
 #endif
 }
 
+static const ghud_builtin_t *find_builtin(const char *serial)
+{
+   const ghud_builtin_t *b;
+   for (b = ghud_builtins; b->text; b++)
+      if (strcmp(b->platform, "psx") == 0 && ghud_text_has_serial(b->text, serial))
+         return b;
+   return NULL;
+}
+
+static void load_builtin(const ghud_builtin_t *b)
+{
+   char err[200];
+   ghud_t *ng = ghud_load_string(b->text, err, sizeof(err));
+   if (!ng) {
+      LOG(RETRO_LOG_ERROR, "built-in %s: %s\n", b->name, err);
+      set_status("GRIND HUD", "Built-in def", "error:", err);
+      return;
+   }
+   if (gh) ghud_free(gh);
+   gh = ng;
+   ghud_set_reader(gh, gh_read, NULL);
+   ghud_set_show_meta(gh, opt_meta);
+   snprintf(gh_path, sizeof(gh_path), "builtin:%s", b->name);
+   gh_mtime = 0;
+   panels_dirty = 1;
+   LOG(RETRO_LOG_INFO, "using built-in %s (%s)\n", b->name, ghud_game_name(gh));
+}
+
+static int is_builtin_path(void) { return strncmp(gh_path, "builtin:", 8) == 0; }
+
 static void load_definition(const char *path)
 {
    char err[200];
@@ -179,6 +210,15 @@ static void refresh_definition(void)
          else
             load_definition(path);
       }
+      else if (find_builtin(serial)) {
+         const ghud_builtin_t *b = find_builtin(serial);
+         char bp[1024];
+         snprintf(bp, sizeof(bp), "builtin:%s", b->name);
+         if (gh && strcmp(bp, gh_path) == 0)
+            ghud_discontinuity(gh);   /* disc swap within the same game */
+         else
+            load_builtin(b);
+      }
       else {
          if (gh) { ghud_free(gh); gh = NULL; }
          gh_path[0] = 0;
@@ -189,7 +229,12 @@ static void refresh_definition(void)
    }
    if (gh_frame % 120 != 0)
       return;
-   if (gh_path[0]) {
+   if (gh_path[0] && is_builtin_path()) {
+      /* a file dropped into system/grindhud/psx overrides the built-in */
+      if (gh_frame % 300 == 0 && find_definition(serial, path, sizeof(path)))
+         load_definition(path);
+   }
+   else if (gh_path[0]) {
       /* hot reload while editing */
       if (stat(gh_path, &st) == 0 && st.st_mtime != gh_mtime)
          load_definition(gh_path);

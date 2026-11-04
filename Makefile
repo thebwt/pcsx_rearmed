@@ -454,7 +454,7 @@ OBJS += deps/libretro-common/time/rtime.o
 CFLAGS += -DUSE_LIBRETRO_VFS
 endif
 OBJS += frontend/libretro.o
-OBJS += frontend/libretro_grindhud.o frontend/grindhud/grindhud.o
+OBJS += frontend/libretro_grindhud.o frontend/grindhud/grindhud.o frontend/grindhud/builtin_defs.o
 CFLAGS += -DHAVE_LIBRETRO
 INC_LIBRETRO_COMMON := 1
 
