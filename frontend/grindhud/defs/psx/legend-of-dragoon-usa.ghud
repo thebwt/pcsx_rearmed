@@ -123,6 +123,8 @@ let allxp = u32(0xBAEF4) + u32(0xBAF20) + u32(0xBAF4C) + u32(0xBAF78) + u32(0xBA
 let allsp = u16(0xBAF02) + u16(0xBAF2E) + u16(0xBAF5A) + u16(0xBAF86) + u16(0xBAFB2) + u16(0xBAFDE) + u16(0xBB00A) + u16(0xBB036) + u16(0xBB062)
 
 # --- session stats (game time while valid) ------------------------------
+# "now" = rolling 10 minutes (rate(x, 600)); "avg" = since the first gain,
+# leaving that first gain out so load/title/walk-in time doesn't drag it down.
 let xpgain = gain(allxp, 100000)
 let spgain = gain(allsp, 20000)
 let goldgain = gain(gold, 100000)
@@ -170,16 +172,19 @@ right "Fights {battles}"
 right ""
 right color cyan "EXP"
 right "+{xpgain:k}"
-right "{perhour(xpgain):k}/h"
+right "now {rate(xpgain, 600):k}/h"
+right color gray "avg {perhour(xpgain):k}/h"
 right ""
 right color magenta "SP"
 right "+{spgain:k}"
-right "{perhour(spgain):k}/h"
+right "now {rate(spgain, 600):k}/h"
+right color gray "avg {perhour(spgain):k}/h"
 right ""
 right color gold "GOLD"
 right "{gold}"
 right "+{goldgain:k}"
-right "{perhour(goldgain):k}/h"
+right "now {rate(goldgain, 600):k}/h"
+right color gray "avg {perhour(goldgain):k}/h"
 right ""
 right meta when !inbattle color orange "DANGER"
 right meta when !inbattle color orange "{bar(danger, 5130)}"

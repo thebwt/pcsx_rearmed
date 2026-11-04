@@ -52,6 +52,10 @@ void ghud_set_reader(ghud_t *g, ghud_read_fn fn, void *user);
  * when this is on. They are still evaluated so counters stay correct. */
 void ghud_set_show_meta(ghud_t *g, int show);
 
+/* Text of line i after the last tick (bars appear as \x01 + fill byte). */
+int ghud_line_count(const ghud_t *g);
+const char *ghud_line_text(const ghud_t *g, int i, int *side, int *visible);
+
 /* Advance one frame of emulated time (dt seconds) and re-evaluate.
  * Returns 1 if any panel text changed (caller should redraw panels). */
 int ghud_tick(ghud_t *g, double dt);

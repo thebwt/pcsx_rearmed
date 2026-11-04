@@ -49,7 +49,7 @@ enum {
    F_U8, F_U16, F_U32, F_S8, F_S16, F_S32,
    F_TBL, F_MIN, F_MAX, F_ABS, F_CLAMP, F_BIT, F_PCT,
    F_SESSION, F_GAIN, F_LOSS, F_COUNT, F_SINCE, F_PERHOUR, F_BAR,
-   F_ARR, F_HOLD
+   F_ARR, F_HOLD, F_RATE
 };
 
 static const struct { const char *name; int id; int minargs, maxargs; int stateful; } funcs[] = {
@@ -71,10 +71,11 @@ static const struct { const char *name; int id; int minargs, maxargs; int statef
    { "loss",    F_LOSS,    1, 2, 1 },
    { "count",   F_COUNT,   1, 1, 1 },
    { "since",   F_SINCE,   1, 1, 1 },
-   { "perhour", F_PERHOUR, 1, 1, 0 },
+   { "perhour", F_PERHOUR, 1, 1, 1 },
    { "bar",     F_BAR,     2, 2, 0 },
    { "arr",     F_ARR,     2, 2, 0 },
    { "hold",    F_HOLD,    2, 2, 1 },
+   { "rate",    F_RATE,    2, 2, 1 },
    { NULL, 0, 0, 0, 0 }
 };
 
@@ -90,6 +91,14 @@ struct gh_node {
    double last_t;
    int has_prev;
    unsigned epoch;
+   /* perhour(): clock starts at the first change */
+   double first_t;
+   int64_t first_v;
+   int has_first;
+   /* rate(): history of (time, value) at each change */
+   double *ev_t;
+   int64_t *ev_v;
+   int ev_n, ev_cap;
    gh_node *next_alloc;
 };
 
@@ -861,6 +870,8 @@ void ghud_free(ghud_t *g)
    n = g->allocs;
    while (n) {
       gh_node *nx = n->next_alloc;
+      free(n->ev_t);
+      free(n->ev_v);
       free(n);
       n = nx;
    }
@@ -929,6 +940,16 @@ int ghud_text_has_serial(const char *text, const char *norm_serial)
 const char *ghud_game_name(const ghud_t *g) { return g->game; }
 
 void ghud_set_show_meta(ghud_t *g, int show) { g->show_meta = show; }
+
+int ghud_line_count(const ghud_t *g) { return g->nlines; }
+
+const char *ghud_line_text(const ghud_t *g, int i, int *side, int *visible)
+{
+   if (i < 0 || i >= g->nlines) return NULL;
+   if (side) *side = g->lines[i].side;
+   if (visible) *visible = g->lines[i].visible && (!g->lines[i].meta || g->show_meta);
+   return g->lines[i].out;
+}
 
 void ghud_set_reader(ghud_t *g, ghud_read_fn fn, void *user)
 {
@@ -1093,9 +1114,81 @@ static gh_val eval(ghud_t *g, gh_node *n)
          return vint((int64_t)(g->t_session - n->last_t));
       }
       case F_PERHOUR: {
+         /* Average rate of a growing counter since it first moved. The first
+          * step is left out of the total: its time (load, title screen, the
+          * walk to the first fight) was before the clock started, so counting
+          * it would inflate the rate. "--" until there is a second step. */
          int64_t v = asint(eval(g, n->a[0]));
-         if (g->t_session < 10.0) return vint(0);
-         return vint((int64_t)((double)v * 3600.0 / g->t_session));
+         double dt;
+         if (!n->has_first) {
+            if (!n->has_prev) { n->prev = v; n->has_prev = 1; return vstr("--"); }
+            if (v != n->prev) {
+               n->has_first = 1;
+               n->first_t = g->t_session;
+               n->first_v = v;
+            }
+            n->prev = v;
+            return vstr("--");
+         }
+         dt = g->t_session - n->first_t;
+         if (v == n->first_v || dt < 1.0)
+            return vstr("--");
+         return vint((int64_t)((double)(v - n->first_v) * 3600.0 / dt));
+      }
+      case F_RATE: {
+         /* Rolling per-hour rate over the last `window` seconds of game time:
+          * (now - value at window start) / window. Before the counter first
+          * moves this is "--"; until a full window has passed since then, the
+          * window starts at the first move (same rule as perhour). */
+         int64_t v = asint(eval(g, n->a[0]));
+         double win = (double)asint(eval(g, n->a[1]));
+         double now = g->t_session, start, dt;
+         int64_t base;
+         int i, keep;
+         if (win < 10.0) win = 10.0;
+         if (n->ev_n == 0 || v != n->ev_v[n->ev_n - 1]) {
+            if (n->ev_n == n->ev_cap) {
+               int nc = n->ev_cap ? n->ev_cap * 2 : 32;
+               double *nt = (double *)realloc(n->ev_t, nc * sizeof(double));
+               int64_t *nv;
+               if (!nt) return vint(0);
+               n->ev_t = nt;
+               nv = (int64_t *)realloc(n->ev_v, nc * sizeof(int64_t));
+               if (!nv) return vint(0);
+               n->ev_v = nv;
+               n->ev_cap = nc;
+            }
+            n->ev_t[n->ev_n] = now;
+            n->ev_v[n->ev_n] = v;
+            n->ev_n++;
+         }
+         /* drop history older than needed: keep the last event at or before
+          * the window start, it holds the value at the start */
+         keep = 0;
+         for (i = 0; i < n->ev_n; i++)
+            if (n->ev_t[i] <= now - win)
+               keep = i;
+         if (keep > 0) {
+            memmove(n->ev_t, n->ev_t + keep, (n->ev_n - keep) * sizeof(double));
+            memmove(n->ev_v, n->ev_v + keep, (n->ev_n - keep) * sizeof(int64_t));
+            n->ev_n -= keep;
+         }
+         if (n->ev_n < 2 && !(n->ev_n == 1 && n->ev_t[0] <= now - win))
+            return vstr("--");   /* hasn't moved yet */
+         if (n->ev_t[0] <= now - win) {
+            base = n->ev_v[0];
+            start = now - win;
+         }
+         else {
+            /* less than a window since the first move: start at the first
+             * move, excluding it (index 1 is the first change) */
+            base = n->ev_v[1];
+            start = n->ev_t[1];
+            if (v == base) return vstr("--");
+         }
+         dt = now - start;
+         if (dt < 1.0) return vstr("--");
+         return vint((int64_t)((double)(v - base) * 3600.0 / dt));
       }
       case F_BAR: {
          /* handled by the formatter; encode fill in a static buffer per node */
@@ -1220,6 +1313,8 @@ void ghud_reset_session(ghud_t *g)
       n->acc = 0;
       n->has_prev = 0;
       n->last_t = 0;
+      n->has_first = 0;
+      n->ev_n = 0;
    }
    g->t_session = 0;
    g->epoch++;
