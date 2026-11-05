@@ -106,11 +106,9 @@ static char *read_text(const char *path)
 }
 
 /* <system>/grindhud/psx/<SERIAL>.ghud, else any *.ghud declaring the serial */
-static int find_definition(const char *serial, char *out, size_t outlen)
+static int find_in_dir(const char *dir, const char *serial, char *out, size_t outlen)
 {
-   char dir[1100];
    struct stat st;
-   snprintf(dir, sizeof(dir), "%s%cgrindhud%cpsx", gh_sysdir, GH_SLASH, GH_SLASH);
    snprintf(out, outlen, "%s%c%s.ghud", dir, GH_SLASH, serial);
    if (stat(out, &st) == 0)
       return 1;
@@ -137,6 +135,27 @@ static int find_definition(const char *serial, char *out, size_t outlen)
 #else
    return 0;
 #endif
+}
+
+/* Search order: a shared folder anyone can write to (on Android the
+ * frontend's private system dir is unreachable without root), then the
+ * frontend's system dir. Built-in definitions are the last resort. */
+static int find_definition(const char *serial, char *out, size_t outlen)
+{
+   char dir[1100];
+#if defined(ANDROID) || defined(__ANDROID__)
+   static const char *shared[] = {
+      "/storage/emulated/0/GrindHUD/psx",
+      "/sdcard/GrindHUD/psx",
+      NULL
+   };
+   int i;
+   for (i = 0; shared[i]; i++)
+      if (find_in_dir(shared[i], serial, out, outlen))
+         return 1;
+#endif
+   snprintf(dir, sizeof(dir), "%s%cgrindhud%cpsx", gh_sysdir, GH_SLASH, GH_SLASH);
+   return find_in_dir(dir, serial, out, outlen);
 }
 
 static const ghud_builtin_t *find_builtin(const char *serial)

@@ -1,0 +1,55 @@
+name: Grind HUD Android core
+
+# Builds the arm64 Android core and publishes it, zipped the way the libretro
+# buildbot does (<file>.zip containing <file>), to the rolling release
+# "grindhud-android". thebwt's Argosy fork downloads PCSX ReARMed from there
+# and update-checks it by the asset's Last-Modified header.
+
+on:
+  push:
+    branches: [grindhud]
+  workflow_dispatch:
+
+concurrency:
+  group: grindhud-android
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: grindhud-android
+  FILE: pcsx_rearmed_libretro_android.so
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build (arm64-v8a)
+        run: |
+          set -euo pipefail
+          "$ANDROID_NDK_HOME/ndk-build" -j"$(nproc)" --no-print-directory -C jni APP_ABI=arm64-v8a
+          mkdir -p out
+          cp libs/arm64-v8a/libretro.so "out/$FILE"
+          (cd out && zip -9 -q "$FILE.zip" "$FILE")
+          ls -la out
+          file "out/$FILE"
+
+      - name: Publish to rolling release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SHA=$(git rev-parse --short HEAD)
+          NOTES="PCSX ReARMed + Grind HUD, arm64 Android. Branch grindhud @ $SHA, built $(date -u +%FT%TZ)."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "out/$FILE.zip" --clobber
+            gh release edit "$TAG" --notes "$NOTES" --target "$GITHUB_SHA"
+          else
+            gh release create "$TAG" "out/$FILE.zip" --title "Grind HUD Android core" \
+              --notes "$NOTES" --target "$GITHUB_SHA" --prerelease
+          fi
